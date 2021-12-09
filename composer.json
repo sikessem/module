@@ -1,0 +1,40 @@
+{
+    "name": "organizer/organizer",
+    "description": "Organizer facilitates the import/export of PHP modules from a root directory and allows to compile, archive and transfer PHP scripts and source codes.",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/SIKessEm/Organizer#readme",
+    "keywords": [
+        "library-manager",
+        "organizer",
+        "organize",
+        "compile",
+        "archive",
+        "transfer",
+        "import",
+        "export",
+        "modules",
+        "scripts",
+        "source-code"
+    ],
+    "readme": "README.md",
+    "authors": [{
+        "homepage": "https://sikessem.com",
+        "name": "SIGUI Kessé Emmanuel",
+        "email": "developer@sikessem.com",
+        "role": "Developer"
+    }],
+    "support": {
+        "source": "https://github.com/SIKessEm/Organizer",
+        "issues": "https://github.com/SIKessEm/Organizer/issues"
+    },
+    "require": {
+        "php": ">=8.0"
+    },
+    "config": {
+        "vendor-dir": "pkg",
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
