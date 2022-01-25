@@ -112,21 +112,38 @@ class Manager {
         return $this;
     }
     
-    public function use(array|string|null $vars = []): mixed {
+    public function use(string ...$names): mixed {
         $organizer = $module = $this;
         if (empty($this->import))
-            throw new \RuntimeException('No source to import');
+            throw new \RuntimeException('Nothing to import');
         extract($this->import['vars']);
         $return_value = $this->import['once'] ? require_once $this->import['file'] : require $this->import['file'];
         $this->import = [];
+        if (!empty($names)) {
+            $return_value = [];
+            foreach ($names as $name)
+                $return_value[$name] = $this->export[$name] ?? null;
+            if (count($return_value) === 1) {
+                $name = array_key_first($return_value);
+                $return_value = $return_value[$name];
+            }
+        }
+        $this->export = [];
         return $return_value;
     }
     
     protected array $export = [];
 
-
-    public function export(mixed ...$values): static {
-        die('Exports...');
+    public function export(mixed $value, mixed ...$values): static {
+        $this->export[] = empty($values) ? $value : [$value, ...$values];
         return $this;
+    }
+    
+    public function as(string $name): void {
+        if (empty($this->export))
+            throw new \RuntimeException('Nothing to export');
+        $key = array_key_last($this->export);
+        $this->export[$name] = $this->export[$key];
+        unset($this->export[$key]);
     }
 }
