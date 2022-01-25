@@ -68,4 +68,65 @@ class Manager {
     public function getPathList(): array {
         return explode(PATH_SEPARATOR, $this->getPath());
     }
+
+    /**
+     * Modules extensions list
+     */
+    const EXTENSIONS = [
+        '.php',
+        '.m.php',
+        '.mod.php',
+        '.module.php',
+    ];
+    
+    protected array $import = [];
+
+    /**
+     * @param string $name The module name
+     * @param bool $once The module is it once ?
+     * @param array $vars The module required vars
+     * @return mixed The module returned value
+     */
+    public function import(string $name, array $vars = [], bool $once = true): static {
+        if(preg_match('/[\/:*?"<>|]/U', $name))
+            throw new Error("Invalid name $name given", Error::INVALID_PATTERN);
+
+        foreach (array_reverse($this->getPathList()) as $dir) {
+            $source_found = false;
+            foreach(self::EXTENSIONS as $extension) {
+                if (!is_file($file = $dir . $name)) {
+                    $path = $name;
+                    while(!is_file($file = $dir . $path . $extension) && is_int($sepos = strpos($path, '.')))
+                        $path = substr_replace($path, DIRECTORY_SEPARATOR, $sepos, 1);
+                }
+                if(is_readable($file)) {
+                    $this->import['file'] = $file;
+                    $this->import['vars'] = $vars;
+                    $this->import['once'] = $once;
+                    $source_found = true;
+                    break;
+                }
+            }
+            if ($source_found) break;
+        }
+        return $this;
+    }
+    
+    public function use(array|string|null $vars = []): mixed {
+        $organizer = $module = $this;
+        if (empty($this->import))
+            throw new \RuntimeException('No source to import');
+        extract($this->import['vars']);
+        $return_value = $this->import['once'] ? require_once $this->import['file'] : require $this->import['file'];
+        $this->import = [];
+        return $return_value;
+    }
+    
+    protected array $export = [];
+
+
+    public function export(mixed ...$values): static {
+        die('Exports...');
+        return $this;
+    }
 }
