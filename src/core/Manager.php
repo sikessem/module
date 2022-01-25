@@ -120,12 +120,14 @@ class Manager {
         $return_value = $this->import['once'] ? require_once $this->import['file'] : require $this->import['file'];
         $this->import = [];
         if (!empty($names)) {
-            $return_value = [];
-            foreach ($names as $name)
-                $return_value[$name] = $this->export[$name] ?? null;
-            if (count($return_value) === 1) {
-                $name = array_key_first($return_value);
-                $return_value = $return_value[$name];
+            if (count($names) === 1) {
+                $name = implode('', $names);
+                $return_value = $name === '*' ? $this->export : $this->export[$name] ?? null;
+            }
+            else {
+                $return_value = [];
+                foreach ($names as $name)
+                    $return_value[$name] = $this->export[$name] ?? null;
             }
         }
         $this->export = [];
