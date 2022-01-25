@@ -66,6 +66,6 @@ class Manager {
     }
     
     public function getPathList(): array {
-        return implode(PATH_SEPARATOR, $this->getPath());
+        return explode(PATH_SEPARATOR, $this->getPath());
     }
 }
