@@ -93,7 +93,7 @@ class Manager {
         '.module.php',
     ];
     
-    protected array $import = [];
+    protected array $modules = [];
 
     /**
      * @param string $name The module name
@@ -101,65 +101,25 @@ class Manager {
      * @param array $vars The module required vars
      * @return mixed The module returned value
      */
-    public function import(string $name, array $vars = [], bool $once = true): static {
-        if(preg_match('/[\/:*?"<>|]/U', $name))
-            throw new Error("Invalid name $name given", Error::INVALID_PATTERN);
+    public function import(string $name, array $vars = [], bool $once = true): Module {
+        if (!isset($this->modules[$name])) {
+            if(preg_match('/[\/:*?"<>|]/U', $name))
+                throw new \InvalidArgumentException("Invalid name $name given");
 
-        foreach (array_reverse($this->getPathList()) as $dir) {
-            $source_found = false;
-            foreach($this->getExtensions() ?: self::EXTENSIONS as $extension) {
-                if (!is_file($file = $dir . $name)) {
-                    $path = $name;
-                    while(!is_file($file = $dir . $path . $extension) && is_int($sepos = strpos($path, '.')))
-                        $path = substr_replace($path, DIRECTORY_SEPARATOR, $sepos, 1);
-                }
-                if(is_readable($file)) {
-                    $this->import['file'] = $file;
-                    $this->import['vars'] = $vars;
-                    $this->import['once'] = $once;
-                    $source_found = true;
-                    break;
+            foreach (array_reverse($this->getPathList()) as $dir) {
+                $source_found = false;
+                foreach($this->getExtensions() ?: self::EXTENSIONS as $extension) {
+                    if (!is_file($file = $dir . $name)) {
+                        $path = $name;
+                        while(!is_file($file = $dir . $path . $extension) && is_int($sepos = strpos($path, '.')))
+                            $path = substr_replace($path, DIRECTORY_SEPARATOR, $sepos, 1);
+                    }
+                    if(is_readable($file))
+                        return $this->modules[$name] = new Module($file, $vars, $once);
                 }
             }
-            if ($source_found) break;
+            throw new \RuntimeException("No module named $name exists");
         }
-        return $this;
-    }
-    
-    public function use(string ...$names): mixed {
-        $organizer = $module = $this;
-        if (empty($this->import))
-            throw new \RuntimeException('Nothing to import');
-        extract($this->import['vars']);
-        $return_value = $this->import['once'] ? require_once $this->import['file'] : require $this->import['file'];
-        $this->import = [];
-        if (!empty($names)) {
-            if (count($names) === 1) {
-                $name = implode('', $names);
-                $return_value = $name === '*' ? $this->export : $this->export[$name] ?? null;
-            }
-            else {
-                $return_value = [];
-                foreach ($names as $name)
-                    $return_value[$name] = $this->export[$name] ?? null;
-            }
-        }
-        $this->export = [];
-        return $return_value;
-    }
-    
-    protected array $export = [];
-
-    public function export(mixed $value, mixed ...$values): static {
-        $this->export[] = empty($values) ? $value : [$value, ...$values];
-        return $this;
-    }
-    
-    public function as(string $name): void {
-        if (empty($this->export))
-            throw new \RuntimeException('Nothing to export');
-        $key = array_key_last($this->export);
-        $this->export[$name] = $this->export[$key];
-        unset($this->export[$key]);
+        return $this->modules[$name];
     }
 }
