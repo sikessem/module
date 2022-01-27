@@ -30,7 +30,7 @@ function get_organizer(string $root = __DIR__): Manager {
     if (!isset($organizer)) {
         $organizer_autoloader = require_once __DIR__ . '/src/core/autoload.php';
         spl_autoload_register($organizer_autoloader);
-        $organizer = new Manager($root, true, get_composer());
+        $organizer = new Manager($root, true, [], get_composer());
         spl_autoload_unregister($organizer_autoloader);
     }
     return $organizer;

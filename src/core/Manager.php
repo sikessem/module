@@ -3,8 +3,8 @@
 use Composer\Autoload\ClassLoader as ComposerAutoloader;
 
 class Manager {
-    public function __construct($path, bool $prepend = false, ?ComposerAutoloader $autoloader = null) {
-        $this->organize($path, $prepend);
+    public function __construct(string $path, bool $prepend = false, array $extensions = [], ?ComposerAutoloader $autoloader = null) {
+        $this->organize($path, $prepend, $extensions);
         if (isset($autoloader))
             $this->setComposerAutoloader($autoloader);
     }
@@ -13,8 +13,9 @@ class Manager {
     
     protected ?Plateform $plateform = null;
 
-    public function organize($path, bool $prepend = false): static {
+    public function organize(string $path, bool $prepend = true, array $extensions = []): static {
         $this->addPath($path, $prepend);
+        $this->addExtensions($extensions);
         return $this;
     }
     
@@ -68,6 +69,23 @@ class Manager {
     public function getPathList(): array {
         return explode(PATH_SEPARATOR, $this->getPath());
     }
+    
+    protected array $extensions = [];
+    
+    public function addExtensions(array $extensions): void {
+        foreach ($extensions as $extension)
+            $this->addExtension($extension);
+    }
+    
+    public function addExtension(string $extension): void {
+        $extension = strtolower($extension);
+        if (!in_array($extension, $$this->extensions))
+            $this->extensions[] = $extension;
+    }
+    
+    public function getExtensions(): array {
+        return $this->extensions;
+    }
 
     /**
      * Modules extensions list
@@ -93,7 +111,7 @@ class Manager {
 
         foreach (array_reverse($this->getPathList()) as $dir) {
             $source_found = false;
-            foreach(self::EXTENSIONS as $extension) {
+            foreach($this->getExtensions() ?: self::EXTENSIONS as $extension) {
                 if (!is_file($file = $dir . $name)) {
                     $path = $name;
                     while(!is_file($file = $dir . $path . $extension) && is_int($sepos = strpos($path, '.')))
