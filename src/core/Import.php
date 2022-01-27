@@ -1,6 +1,6 @@
 <?php namespace Organizer;
 
-class Module {
+class Import {
     public function __construct(protected string $file, protected array $vars = [], protected bool $once = false) {
         if (!is_file($file))
             throw new \InvalidArgumentException("No such file $file");

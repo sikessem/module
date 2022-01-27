@@ -93,7 +93,7 @@ class Manager {
         '.module.php',
     ];
     
-    protected array $modules = [];
+    protected array $imports = [];
 
     /**
      * @param string $name The module name
@@ -101,13 +101,12 @@ class Manager {
      * @param array $vars The module required vars
      * @return mixed The module returned value
      */
-    public function import(string $name, array $vars = [], bool $once = true): Module {
-        if (!isset($this->modules[$name])) {
+    public function import(string $name, array $vars = [], bool $once = true): Import {
+        if (!isset($this->imports[$name])) {
             if(preg_match('/[\/:*?"<>|]/U', $name))
                 throw new \InvalidArgumentException("Invalid name $name given");
 
             foreach (array_reverse($this->getPathList()) as $dir) {
-                $source_found = false;
                 foreach($this->getExtensions() ?: self::EXTENSIONS as $extension) {
                     if (!is_file($file = $dir . $name)) {
                         $path = $name;
@@ -115,11 +114,11 @@ class Manager {
                             $path = substr_replace($path, DIRECTORY_SEPARATOR, $sepos, 1);
                     }
                     if(is_readable($file))
-                        return $this->modules[$name] = new Module($file, $vars, $once);
+                        return $this->imports[$name] = new Import($file, $vars, $once);
                 }
             }
             throw new \RuntimeException("No module named $name exists");
         }
-        return $this->modules[$name];
+        return $this->imports[$name];
     }
 }
