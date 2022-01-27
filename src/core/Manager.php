@@ -8,10 +8,6 @@ class Manager {
         if (isset($autoloader))
             $this->setComposerAutoloader($autoloader);
     }
-    
-    protected static array $ORGANIZED = [];
-    
-    protected ?Plateform $plateform = null;
 
     public function organize(string $path, bool $prepend = true, array $extensions = []): static {
         $this->addPath($path, $prepend);
