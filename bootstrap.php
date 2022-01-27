@@ -2,6 +2,8 @@
 
 use Composer\Autoload\ClassLoader as ComposerAutoloader;
 
+require_once __DIR__ . '/src/core/autoload.php';
+
 /**
  * @staticvar type $composer_autoloader              The composer autoload class loader
  * @param     string $root                           The root directory to search from
@@ -27,12 +29,8 @@ function get_composer(string $root = __DIR__): ?ComposerAutoloader {
 
 function get_organizer(string $root = __DIR__): Manager {
     static $organizer;
-    if (!isset($organizer)) {
-        $organizer_autoloader = require_once __DIR__ . '/src/core/autoload.php';
-        spl_autoload_register($organizer_autoloader);
+    if (!isset($organizer))
         $organizer = new Manager($root, true, [], get_composer());
-        spl_autoload_unregister($organizer_autoloader);
-    }
     return $organizer;
 }
 

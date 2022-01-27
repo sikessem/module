@@ -8,7 +8,7 @@
  | License : Apache 2.0                         |
  +----------------------------------------------+
  */
-return function(string $name): void {
+spl_autoload_register(function(string $name): void {
     $namespace = __NAMESPACE__;
     $directory = __DIR__ . DIRECTORY_SEPARATOR;
     $extension = '.' . pathinfo(__FILE__, PATHINFO_EXTENSION);
@@ -16,4 +16,4 @@ return function(string $name): void {
         if (is_file($file = $directory . str_replace('\\', DIRECTORY_SEPARATOR, $matches['name']) . $extension))
             if (is_readable($file))
                 require_once $file;
-};
+});
