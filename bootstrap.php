@@ -30,8 +30,14 @@ function get_composer(string $root = __DIR__): ?ComposerAutoloader {
 function get_organizer(string $root = __DIR__): Manager {
     static $organizer;
     if (!isset($organizer))
-        $organizer = new Manager($root, true, [], get_composer());
+        $organizer = new Manager($root, true, ['.php'], get_composer());
     return $organizer;
+}
+
+if (!function_exists('import')) {
+    function import(string $name, array $vars = [], bool $once = true): Import {
+        return get_organizer()->import($name, $vars, $once);
+    }
 }
 
 return get_organizer();
