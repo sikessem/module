@@ -1,6 +1,7 @@
-<?php namespace Organizer;
+<?php
 
 use Composer\Autoload\ClassLoader as ComposerAutoloader;
+use Organizer\{Manager,Import};
 
 require_once __DIR__ . '/src/core/autoload.php';
 
