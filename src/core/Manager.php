@@ -75,7 +75,7 @@ class Manager {
     
     public function addExtension(string $extension): void {
         $extension = strtolower($extension);
-        if (!in_array($extension, $$this->extensions))
+        if (!in_array($extension, $this->extensions))
             $this->extensions[] = $extension;
     }
     
