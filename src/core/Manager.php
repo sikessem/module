@@ -82,40 +82,23 @@ class Manager {
     public function getExtensions(): array {
         return $this->extensions;
     }
-
-    /**
-     * Modules extensions list
-     */
-    const EXTENSIONS = [
-        '.php',
-        '.m.php',
-        '.mod.php',
-        '.module.php',
-    ];
     
     protected array $imports = [];
 
-    /**
-     * @param string $name The module name
-     * @param bool $once The module is it once ?
-     * @param array $vars The module required vars
-     * @return mixed The module returned value
-     */
     public function import(string $name, array $vars = [], bool $once = true): Import {
         if (!isset($this->imports[$name])) {
             if(preg_match('/[\/:*?"<>|]/U', $name))
                 throw new \InvalidArgumentException("Invalid name $name given");
-
-            foreach (array_reverse($this->getPathList()) as $dir) {
-                foreach($this->getExtensions() ?: self::EXTENSIONS as $extension) {
-                    if (!is_file($file = $dir . $name)) {
+            foreach ($this->getPathList() as $dir) {
+                if (!is_file($file = $dir . $name)) {    
+                    foreach($this->getExtensions() as $extension) {
                         $path = $name;
                         while(!is_file($file = $dir . $path . $extension) && is_int($sepos = strpos($path, '.')))
                             $path = substr_replace($path, DIRECTORY_SEPARATOR, $sepos, 1);
                     }
-                    if(is_readable($file))
-                        return $this->imports[$name] = new Import($file, $vars, $once);
                 }
+                if(is_readable($file))
+                    return $this->imports[$name] = new Import($file, $vars, $once);
             }
             throw new \RuntimeException("No module named $name exists");
         }
