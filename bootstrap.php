@@ -41,4 +41,10 @@ if (!function_exists('import')) {
     }
 }
 
+if (!function_exists('organize')) {
+    function organize(string $path, bool $prepend = true, array $extensions = []): Manager {
+        return get_organizer()->organize($path, $prepend, $extensions);
+    }
+}
+
 return get_organizer();
