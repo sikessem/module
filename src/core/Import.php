@@ -7,9 +7,7 @@ class Import {
     }
     
     public function use(string ...$names): mixed {
-        $module = $this;
-        extract($this->vars);
-        $result = $this->once ? require_once $this->file : require $this->file;
+        $result = $this->source();
         if (!empty($names)) {
             if (count($names) === 1) {
                 $name = $names[0];
@@ -35,7 +33,13 @@ class Import {
         }
         return $result;
     }
-    
+
+    public function source(): mixed {
+        $module = $this;
+        extract($this->vars);
+        return $this->once ? require_once $this->file : require $this->file;
+    }
+
     protected array $exports = [];
 
     public function export(mixed $value, mixed ...$values): Export {
