@@ -40,6 +40,16 @@ class Import {
         return $this->once ? require_once $this->file : require $this->file;
     }
 
+    public function render(callable $callback = null): string {
+        ob_start($callback);
+        $render = (string) $this->source();
+        if (!$render)
+            $render = ob_get_clean();
+        else
+            ob_end_clean();
+        return $render;
+    }
+
     protected array $exports = [];
 
     public function export(mixed $value, mixed ...$values): Export {
