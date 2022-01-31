@@ -29,7 +29,7 @@ class Manager {
     
     public function addPath(string $path, bool $prepend = false): void {
         if (!\is_dir($path))
-            throw new \InvalidArgumentException("No such directory $path", Exception::UNKNOWN_PATH);
+            throw new Exception("No such directory $path", Exception::UNKNOWN_PATH);
 
         if (!\is_readable($path))
             throw new Exception("Cannot read directory $path", Exception::NOT_READABLE);
@@ -107,10 +107,10 @@ class Manager {
 
     protected array $imports = [];
 
-    public function import(string $name, array $vars = [], bool $once = true): Import {
+    public function import(string $name, bool $once = false): Import {
         if (!isset($this->imports[$name])) {
             if ($file = $this->getPathOf($name))
-                $this->imports[$name] = new Import($file, $vars, $once);
+                $this->imports[$name] = new Import($file, $once);
             else throw new Exception("No module named $name exists", Exception::UNKNOWN_PATH);
         }
         return $this->imports[$name];

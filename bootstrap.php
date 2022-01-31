@@ -36,8 +36,8 @@ function get_organizer(string $root = __DIR__): Manager {
 }
 
 if (!function_exists('import')) {
-    function import(string $name, array $vars = [], bool $once = true): Import {
-        return get_organizer()->import($name, $vars, $once);
+    function import(string $name, bool $once = true): Import {
+        return get_organizer()->import($name, $once);
     }
 }
 

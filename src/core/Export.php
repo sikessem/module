@@ -22,19 +22,19 @@ class Export {
         return count($this->values) > 1 ? $this->values : $this->values[0];
     }
     
-    protected string $name = '';
+    protected string $alias = '';
     
-    public function as(string $name): void {
-        $this->name = $name;
+    public function as(string $alias): void {
+        $this->alias = $alias;
     }
     
-    public function is(string $name): bool {
-        return $this->name === $name;
+    public function is(string $pattern): bool {
+        return fnmatch($pattern, $this->alias);
     }
-    
-    public function in(array $names): bool {
-        foreach ($names as $name)
-            if ($this->is($name))
+
+    public function in(array $patterns): bool {
+        foreach ($patterns as $pattern)
+            if ($this->is($pattern))
                 return true;
         return false;
     }

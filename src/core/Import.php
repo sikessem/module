@@ -1,49 +1,62 @@
 <?php namespace Organizer;
 
 class Import {
-    public function __construct(protected string $file, protected array $vars = [], protected bool $once = false) {
+    public function __construct(protected string $file, protected bool $once = false) {
         if (!is_file($file))
             throw Exception("No such file $file", Exception::NO_SUCH_FILE);
     }
-    
-    public function use(string ...$names): mixed {
-        $result = $this->source();
-        if (!empty($names)) {
-            if (count($names) === 1) {
-                $name = $names[0];
-                if ($name === '*') {
-                    $result = [];
-                    foreach ($this->exports as $export) {
-                        $result[] = $export->getValues();
-                    }
-                }
-                else {
-                    foreach ($this->exports as $export) {
-                        if ($export->is($name))
-                            return $export->getValues();
-                    }
-                }
-            }
-            else {
-                $result = [];
-                foreach ($exports as $export)
-                    if ($export->in($names))
-                        $result[] = $export->getValues();
-            }
-        }
-        return $result;
+
+    protected array $exports = [];
+
+    public function export(mixed $val, mixed ...$vals): Export {
+        return $this->exports[] = new Export($val, ...$vals);
     }
 
+    protected array $vars = [];
+
     public function with(array $vars): self {
-        foreach ($vars as $var => $val)
+        foreach ($vars as $var => $val) {
             $this->vars[$var] = $val;
+        }
         return $this;
     }
 
-    public function into(&...$refs): void {
-        $vals = $this->use('*');
-        foreach ($refs as &$ref)
-            $ref = array_shift($vals);
+    public function use(string $var, string ...$vars): mixed {
+        $val = $this->source();
+        if (empty($vars)) {
+            if ($var === 'default') {
+                return $val;
+            }
+            else {
+                $vals = [];
+                foreach ($this->exports as $export) {
+                    if ($export->is($var)) {
+                        $vals[] = $export->getValues();
+                    }
+                }
+                $vals['default'] = $val;
+                return \count($vals) > 1 ? $vals : $vals[\array_key_first($vals)];
+            }
+        }
+        else {
+            $vals = [];
+            $vars = [$var, ...$vars];
+            foreach ($exports as $export) {
+                if ($export->in($vars)) {
+                    $vals[] = $export->getValues();
+                }
+            }
+            $vals['default'] = $val;
+            return $vals;
+        }
+    }
+
+    public function into(&$ref, &...$refs): void {
+        $refs = [&$ref, ...$refs];
+        $vals = (array) $this->use('*');
+        foreach ($refs as &$ref) {
+            $ref = \count($vals) > 0 ? \array_shift($vals) : null;
+        }
     }
 
     public function source(): mixed {
@@ -60,11 +73,5 @@ class Import {
         else
             ob_end_clean();
         return $render;
-    }
-
-    protected array $exports = [];
-
-    public function export(mixed $value, mixed ...$values): Export {
-        return $this->exports[] = new Export($value, ...$values);
     }
 }
