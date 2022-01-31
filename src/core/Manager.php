@@ -82,25 +82,36 @@ class Manager {
     public function getExtensions(): array {
         return $this->extensions;
     }
-    
+
+    protected array $pathnames = [];
+
+    public function getPathOf(string $name): ?string {
+        if (!isset($this->pathnames[$name])) {
+            if (preg_match('/[\/:*?"<>|]/U', $name))
+                throw new \InvalidArgumentException("Invalid name $name given");
+            $path = $name;
+            while (is_int($sepos = strpos($path, '.'))) {
+                $path = substr_replace($path, DIRECTORY_SEPARATOR, $sepos, 1);
+                foreach ($this->getPathList() as $dir) {
+                    if (file_exists($file = $dir . $path))
+                        return $this->pathnames[$name] = $file;
+                    foreach ($this->getExtensions() as $extension) {
+                        if (file_exists($file = $dir . $path . $extension))
+                            return $this->pathnames[$name] = $file;
+                    }
+                }
+            }
+        }
+        return $this->pathnames[$name] ?? null;
+    }
+
     protected array $imports = [];
 
     public function import(string $name, array $vars = [], bool $once = true): Import {
         if (!isset($this->imports[$name])) {
-            if(preg_match('/[\/:*?"<>|]/U', $name))
-                throw new \InvalidArgumentException("Invalid name $name given");
-            foreach ($this->getPathList() as $dir) {
-                if (!is_file($file = $dir . $name)) {    
-                    foreach($this->getExtensions() as $extension) {
-                        $path = $name;
-                        while(!is_file($file = $dir . $path . $extension) && is_int($sepos = strpos($path, '.')))
-                            $path = substr_replace($path, DIRECTORY_SEPARATOR, $sepos, 1);
-                    }
-                }
-                if(is_readable($file))
-                    return $this->imports[$name] = new Import($file, $vars, $once);
-            }
-            throw new \RuntimeException("No module named $name exists");
+            if ($file = $this->getPathOf($name))
+                $this->imports[$name] = new Import($file, $vars, $once);
+            else throw new \RuntimeException("No module named $name exists");
         }
         return $this->imports[$name];
     }
