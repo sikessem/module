@@ -105,14 +105,14 @@ class Manager {
         return $this->pathnames[$name] ?? null;
     }
 
-    protected array $imports = [];
+    protected array $modules = [];
 
-    public function import(string $name, bool $once = false): Import {
-        if (!isset($this->imports[$name])) {
+    public function from(string $name, bool $once = false): Module {
+        if (!isset($this->modules[$name])) {
             if ($file = $this->getPathOf($name))
-                $this->imports[$name] = new Import($file, $once);
+                $this->modules[$name] = new Module($file, $once);
             else throw new Exception("No module named $name exists", Exception::UNKNOWN_PATH);
         }
-        return $this->imports[$name];
+        return $this->modules[$name];
     }
 }
