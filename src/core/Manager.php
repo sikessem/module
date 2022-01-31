@@ -29,10 +29,10 @@ class Manager {
     
     public function addPath(string $path, bool $prepend = false): void {
         if (!\is_dir($path))
-            throw new \InvalidArgumentException("No such directory $path");
+            throw new \InvalidArgumentException("No such directory $path", Exception::UNKNOWN_PATH);
 
         if (!\is_readable($path))
-            throw new \InvalidArgumentException("Cannot read directory $path");
+            throw new Exception("Cannot read directory $path", Exception::NOT_READABLE);
         
         $path = \realpath($path) . \DIRECTORY_SEPARATOR;
 
@@ -88,7 +88,7 @@ class Manager {
     public function getPathOf(string $name): ?string {
         if (!isset($this->pathnames[$name])) {
             if (preg_match('/[\/:*?"<>|]/U', $name))
-                throw new \InvalidArgumentException("Invalid name $name given");
+                throw new Exception("Invalid name $name given", Exception::INVALID_NAME);
             $path = $name;
             while (is_int($sepos = strpos($path, '.'))) {
                 $path = substr_replace($path, DIRECTORY_SEPARATOR, $sepos, 1);
@@ -111,7 +111,7 @@ class Manager {
         if (!isset($this->imports[$name])) {
             if ($file = $this->getPathOf($name))
                 $this->imports[$name] = new Import($file, $vars, $once);
-            else throw new \RuntimeException("No module named $name exists");
+            else throw new Exception("No module named $name exists", Exception::UNKNOWN_PATH);
         }
         return $this->imports[$name];
     }

@@ -3,7 +3,7 @@
 class Import {
     public function __construct(protected string $file, protected array $vars = [], protected bool $once = false) {
         if (!is_file($file))
-            throw new \InvalidArgumentException("No such file $file");
+            throw Exception("No such file $file", Exception::NO_SUCH_FILE);
     }
     
     public function use(string ...$names): mixed {
