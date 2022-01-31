@@ -40,6 +40,12 @@ class Import {
         return $this;
     }
 
+    public function into(&...$refs): void {
+        $vals = $this->use('*');
+        foreach ($refs as &$ref)
+            $ref = array_shift($vals);
+    }
+
     public function source(): mixed {
         $module = $this;
         extract($this->vars);
