@@ -34,6 +34,12 @@ class Import {
         return $result;
     }
 
+    public function with(array $vars): self {
+        foreach ($vars as $var => $val)
+            $this->vars[$var] = $val;
+        return $this;
+    }
+
     public function source(): mixed {
         $module = $this;
         extract($this->vars);
