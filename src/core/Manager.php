@@ -3,26 +3,31 @@
 use Composer\Autoload\ClassLoader as ComposerAutoloader;
 
 class Manager {
-    public function __construct(string $path, bool $prepend = false, array $extensions = [], ?ComposerAutoloader $autoloader = null) {
+    public function __construct(string $path, bool $prepend = false, array $extensions = []) {
         $this->organize($path, $prepend, $extensions);
-        if (isset($autoloader))
-            $this->setComposerAutoloader($autoloader);
     }
 
     public function organize(string $path, bool $prepend = true, array $extensions = []): static {
         $this->addPath($path, $prepend);
         $this->addExtensions($extensions);
+        self::compose($path);
         return $this;
     }
+
+    protected static array $COMPOSER_AUTOLOADERS = [];
     
-    protected ?ComposerAutoloader $composer_autoloader = null;
-    
-    public function setComposerAutoloader(ComposerAutoloader $autoloader): void {
-        $this->composer_autoloader = $autoloader;
-    }
-    
-    public function getComposerAutoloader(): ?ComposerAutoloader {
-        return $this->composer_autoloader;
+    public static function compose(string $root = __DIR__): ?ComposerAutoloader {
+        while (!isset(self::$COMPOSER_AUTOLOADERS[$root]) && dirname($root) !== $root) {
+            if (is_file($composer_file = $root . DIRECTORY_SEPARATOR . 'composer.json') && is_readable($composer_file)) {
+                if (($composer_data = @file_get_contents($composer_file)) && ($composer_data = @json_decode($composer_data, true))) {
+                    if (is_file($autoload_file = $root . DIRECTORY_SEPARATOR . ($composer_data['config']['vendor-dir'] ?? 'vendor') . DIRECTORY_SEPARATOR . 'autoload.php') && is_readable($autoload_file)) {
+                        $COMPOSER_AUTOLOADERS[$root] = require_once $autoload_file;
+                    }
+                }
+            }
+            $root = dirname($root);
+        }
+        return $COMPOSER_AUTOLOADERS[$root] ?? null;
     }
 
     protected string $path = '';
