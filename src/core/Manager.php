@@ -105,14 +105,14 @@ class Manager {
         return $this->pathnames[$name] ?? null;
     }
 
-    protected array $modules = [];
+    protected array $bundles = [];
 
-    public function from(string $name, bool $once = false): Module {
-        if (!isset($this->modules[$name])) {
+    public function import(string $name, bool $required, bool $once = false, array $inputs = [], &...$outputs): Module {
+        if (!isset($this->bundles[$name])) {
             if ($file = $this->getPathOf($name))
-                $this->modules[$name] = new Module($file, $once);
+                $this->bundles[$name] = (is_dir($file) ? new Package($file, $required, $once, $inputs, ...$outputs) : new Module($file, $required, $once, $inputs, ...$outputs))->import();
             else throw new Exception("No module named $name exists", Exception::UNKNOWN_PATH);
         }
-        return $this->modules[$name];
+        return $this->bundles[$name];
     }
 }

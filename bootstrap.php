@@ -1,7 +1,7 @@
 <?php
 
 use Composer\Autoload\ClassLoader as ComposerAutoloader;
-use Organizer\{Manager,Module};
+use Organizer\Manager;
 
 require_once __DIR__ . '/src/core/autoload.php';
 
@@ -35,9 +35,9 @@ function get_organizer(string $root = __DIR__): Manager {
     return $organizer;
 }
 
-if (!function_exists('from')) {
-    function from(string $name, bool $once = true): Module {
-        return get_organizer()->from($name, $once);
+if (!function_exists('import')) {
+    function import(string $name, bool $required = false, bool $once = true, array $inputs = [], &...$outputs): mixed {
+        return get_organizer()->import($name, $required, $once, $inputs, ...$outputs);
     }
 }
 
