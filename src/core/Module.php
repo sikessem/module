@@ -1,9 +1,8 @@
 <?php namespace Organizer;
 
-class Module {
-    public function __construct(protected string $file, protected bool $once = false) {
-        if (!is_file($file))
-            throw Exception("No such file $file", Exception::NO_SUCH_FILE);
+class Module extends Bundle {
+    public function __construct(string $file, bool $required = false, protected bool $once = false) {
+        parent::__construct($file, $required);
     }
 
     protected array $vars = [];
