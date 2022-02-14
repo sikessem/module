@@ -2,7 +2,7 @@
 
 class Module extends Bundle {
     public function __construct(string $file, bool $required = false, bool $once = false, array $inputs = []) {
-        parent::__construct($file, $required, $once, $inputs, ...$outputs);
+        parent::__construct($file, $required, $once, $inputs);
         if (!is_file($file))
             throw new Exception("No such file $file", Exception::NO_SUCH_FILE);
     }

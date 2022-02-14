@@ -3,15 +3,10 @@
 use Composer\Autoload\ClassLoader as ComposerAutoloader;
 
 class Manager {
-    public function __construct(string $path, bool $prepend = false, array $extensions = []) {
-        $this->organize($path, $prepend, $extensions);
-    }
-
-    public function organize(string $path, bool $prepend = true, array $extensions = []): static {
-        $this->addPath($path, $prepend);
-        $this->addExtensions($extensions);
+    public static function organize(string $path, bool $prepend = true, array $extensions = []): void {
+        self::addPath($path, $prepend);
+        self::addExtensions($extensions);
         self::compose($path);
-        return $this;
     }
 
     protected static array $COMPOSER_AUTOLOADERS = [];
@@ -30,9 +25,9 @@ class Manager {
         return $COMPOSER_AUTOLOADERS[$root] ?? null;
     }
 
-    protected string $path = '';
+    protected static string $PATH = '';
     
-    public function addPath(string $path, bool $prepend = false): void {
+    public static function addPath(string $path, bool $prepend = false): void {
         if (!\is_dir($path))
             throw new Exception("No such directory $path", Exception::UNKNOWN_PATH);
 
@@ -41,83 +36,81 @@ class Manager {
         
         $path = \realpath($path) . \DIRECTORY_SEPARATOR;
 
-        if (empty($this->path)) {
-            $this->setPath($path);
+        if (empty(self::$PATH)) {
+            self::setPath($path);
             return;
         }
         
-        if (in_array($path, $this->getPathList(), true))
+        if (in_array($path, self::getPathList(), true))
             return;
 
-        $path = $prepend ? $path . \PATH_SEPARATOR . $this->getPath() : $this->getPath() . \PATH_SEPARATOR . $path;
-        $this->setPath($path);
+        $path = $prepend ? $path . \PATH_SEPARATOR . self::getPath() : self::getPath() . \PATH_SEPARATOR . $path;
+        self::setPath($path);
     }
     
-    public function setPath(string $path): void {
-        $this->path = $path;
+    public static function setPath(string $path): void {
+        self::$PATH = $path;
     }
     
-    public function getPath(): string {
-        return $this->path;
+    public static function getPath(): string {
+        return self::$PATH;
     }
     
-    public function setPathList(array $list): void {
-        $this->path = '';
-        foreach ($list as $path)
-            $this->addPath ($path);
+    public static function setPathList(array $list): void {
+        self::setPath(implode(\PATH_SEPARATOR, $list));
     }
     
-    public function getPathList(): array {
-        return explode(PATH_SEPARATOR, $this->getPath());
+    public static function getPathList(): array {
+        return explode(\PATH_SEPARATOR, self::getPath());
     }
     
-    protected array $extensions = [];
+    protected static array $EXT = [];
     
-    public function addExtensions(array $extensions): void {
+    public static function addExtensions(array $extensions): void {
         foreach ($extensions as $extension)
-            $this->addExtension($extension);
+            self::addExtension($extension);
     }
     
-    public function addExtension(string $extension): void {
+    public static function addExtension(string $extension): void {
         $extension = strtolower($extension);
-        if (!in_array($extension, $this->extensions))
-            $this->extensions[] = $extension;
+        if (!in_array($extension, self::getExtensions(), true))
+            self::$EXT[] = $extension;
     }
     
-    public function getExtensions(): array {
-        return $this->extensions;
+    public static function getExtensions(): array {
+        return self::$EXT;
     }
 
-    protected array $pathnames = [];
+    protected static array $FILES = [];
 
-    public function getPathOf(string $name): ?string {
-        if (!isset($this->pathnames[$name])) {
+    public static function getPathOf(string $name): ?string {
+        if (!isset(self::$FILES[$name])) {
             if (preg_match('/[\/:*?"<>|]/U', $name))
                 throw new Exception("Invalid name $name given", Exception::INVALID_NAME);
             $path = $name;
             while (is_int($sepos = strpos($path, '.'))) {
                 $path = substr_replace($path, DIRECTORY_SEPARATOR, $sepos, 1);
-                foreach ($this->getPathList() as $dir) {
+                foreach (self::getPathList() as $dir) {
                     if (file_exists($file = $dir . $path))
-                        return $this->pathnames[$name] = $file;
-                    foreach ($this->getExtensions() as $extension) {
+                        return self::$FILES[$name] = $file;
+                    foreach (self::getExtensions() as $extension) {
                         if (file_exists($file = $dir . $path . $extension))
-                            return $this->pathnames[$name] = $file;
+                            return self::$FILES[$name] = $file;
                     }
                 }
             }
         }
-        return $this->pathnames[$name] ?? null;
+        return self::$FILES[$name] ?? null;
     }
 
-    protected array $bundles = [];
+    protected static array $BUNDLES = [];
 
-    public function import(string $name, bool $required, bool $once = false, array $inputs = []): Module {
-        if (!isset($this->bundles[$name])) {
-            if ($file = $this->getPathOf($name))
-                $this->bundles[$name] = (is_dir($file) ? new Package($file, $required, $once, $inputs) : new Module($file, $required, $once, $inputs))->import();
+    public static function import(string $name, bool $required, bool $once = false, array $inputs = []): mixed {
+        if (!isset(self::$BUNDLES[$name])) {
+            if ($file = self::getPathOf($name))
+                self::$BUNDLES[$name] = (is_dir($file) ? new Package($file, $required, $once, $inputs) : new Module($file, $required, $once, $inputs))->import();
             else throw new Exception("No module named $name exists", Exception::UNKNOWN_PATH);
         }
-        return $this->bundles[$name];
+        return self::$BUNDLES[$name];
     }
 }
