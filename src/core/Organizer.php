@@ -3,7 +3,7 @@
 use Composer\Autoload\ClassLoader as ComposerAutoloader;
 
 class Organizer {
-    public static function organize(string $path, array $extensions = [], bool $prepend = true): void {
+    public static function organize(string|array $path, array $extensions = [], bool $prepend = true): void {
         self::addPath($path, $prepend);
         self::addExtensions($extensions);
         self::$COMPOSER_AUTOLOADERS[$path] = self::getComposerAutoloader($path);
@@ -27,7 +27,14 @@ class Organizer {
 
     protected static string $PATH = '';
     
-    public static function addPath(string $path, bool $prepend = false): void {
+    public static function addPath(string|array $path, bool $prepend = false): void {
+        if (is_array($path)) {
+            foreach ($path as $p) {
+                self::addPath($p, $prepend);
+            }
+            return;
+        }
+
         if (!\is_dir($path))
             throw new Exception("No such directory $path", Exception::UNKNOWN_PATH);
 
