@@ -1,8 +1,8 @@
 <?php namespace Organizer;
 
 class Package extends Bundle {
-    public function __construct(string $file, bool $required = false, bool $once = false, array $inputs = [], &...$outputs) {
-        parent::__construct($file, $required, $once, $inputs, ...$outputs);
+    public function __construct(string $file, bool $required = false, bool $once = false, array $inputs = []) {
+        parent::__construct($file, $required, $once, $inputs);
         if (!is_dir($file))
             throw new Exception("No such directory $file", Exception::NO_SUCH_FILE);
     }

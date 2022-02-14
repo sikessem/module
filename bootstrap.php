@@ -13,8 +13,8 @@ function get_organizer(string $root = __DIR__): Manager {
 }
 
 if (!function_exists('import')) {
-    function import(string $name, bool $required = false, bool $once = true, array $inputs = [], &...$outputs): mixed {
-        return get_organizer()->import($name, $required, $once, $inputs, ...$outputs);
+    function import(string $name, bool $required = false, bool $once = true, array $inputs = []): mixed {
+        return get_organizer()->import($name, $required, $once, $inputs);
     }
 }
 

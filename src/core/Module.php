@@ -1,26 +1,23 @@
 <?php namespace Organizer;
 
 class Module extends Bundle {
-    public function __construct(string $file, bool $required = false, bool $once = false, array $inputs = [], &...$outputs) {
+    public function __construct(string $file, bool $required = false, bool $once = false, array $inputs = []) {
         parent::__construct($file, $required, $once, $inputs, ...$outputs);
         if (!is_file($file))
             throw new Exception("No such file $file", Exception::NO_SUCH_FILE);
     }
 
-    protected array $values = [];
+    protected array $outputs = [];
 
     public function export(int|string $key, mixed $value): void {
-        $this->values[$key] = $value;
+        $this->outputs[$key] = $value;
     }
 
     public function import(): mixed {
         $module = $this;
         extract($this->inputs);
-        $result = $this-> required ? ($this->once ? require_once $this->file : require $this->file) : ($this->once ? include_once $this->file : include $this->file);
-        foreach ($this->outputs as &$output) {
-            $output = array_shift($module->values);
-        }
-        return $result;
+        $this->outputs['default'] = $this-> required ? ($this->once ? require_once $this->file : require $this->file) : ($this->once ? include_once $this->file : include $this->file);
+        return \count($this->outputs) > 1 ? $this->outputs : $this->outputs['default'];
     }
 
     public function render(callable $callback = null): string {

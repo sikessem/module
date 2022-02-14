@@ -112,10 +112,10 @@ class Manager {
 
     protected array $bundles = [];
 
-    public function import(string $name, bool $required, bool $once = false, array $inputs = [], &...$outputs): Module {
+    public function import(string $name, bool $required, bool $once = false, array $inputs = []): Module {
         if (!isset($this->bundles[$name])) {
             if ($file = $this->getPathOf($name))
-                $this->bundles[$name] = (is_dir($file) ? new Package($file, $required, $once, $inputs, ...$outputs) : new Module($file, $required, $once, $inputs, ...$outputs))->import();
+                $this->bundles[$name] = (is_dir($file) ? new Package($file, $required, $once, $inputs) : new Module($file, $required, $once, $inputs))->import();
             else throw new Exception("No module named $name exists", Exception::UNKNOWN_PATH);
         }
         return $this->bundles[$name];
