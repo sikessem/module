@@ -3,10 +3,10 @@
 use Composer\Autoload\ClassLoader as ComposerAutoloader;
 
 class Manager {
-    public static function organize(string $path, bool $prepend = true, array $extensions = []): void {
+    public static function organize(string $path, array $extensions = [], bool $prepend = true): void {
         self::addPath($path, $prepend);
         self::addExtensions($extensions);
-        self::compose($path);
+        self::$COMPOSER_AUTOLOADERS[$path] = self::compose($path);
     }
 
     protected static array $COMPOSER_AUTOLOADERS = [];
