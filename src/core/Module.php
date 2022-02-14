@@ -16,7 +16,7 @@ class Module extends Bundle {
     public function import(): mixed {
         $module = $this;
         extract($this->inputs);
-        $result = $this->once ? require_once $this->file : require $this->file;
+        $result = $this-> required ? ($this->once ? require_once $this->file : require $this->file) : ($this->once ? include_once $this->file : include $this->file);
         foreach ($this->outputs as &$output) {
             $output = array_shift($module->values);
         }
