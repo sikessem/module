@@ -5,19 +5,16 @@ class Module extends Bundle {
         parent::__construct($file, $required, $once, $inputs);
         if (!is_file($file))
             throw new Exception("No such file $file", Exception::NO_SUCH_FILE);
+        $this->exports = new Exports();
     }
 
-    protected array $outputs = [];
+    public Exports $exports;
 
-    public function export(int|string $key, mixed $value): void {
-        $this->outputs[$key] = $value;
-    }
-
-    public function import(): mixed {
+    public function import(): Imports {
         $module = $this;
         extract($this->inputs);
-        $this->outputs['default'] = $this-> required ? ($this->once ? require_once $this->file : require $this->file) : ($this->once ? include_once $this->file : include $this->file);
-        return \count($this->outputs) > 1 ? $this->outputs : $this->outputs['default'];
+        $this->exports['default'] = $this-> required ? ($this->once ? require_once $this->file : require $this->file) : ($this->once ? include_once $this->file : include $this->file);
+        return $this->imports = new Imports($this->exports);
     }
 
     public function render(callable $callback = null): string {
@@ -33,4 +30,5 @@ class Module extends Bundle {
     public function __toString(): string {
         return $this->render();
     }
+
 }
