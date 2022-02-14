@@ -2,16 +2,16 @@
 
 use Composer\Autoload\ClassLoader as ComposerAutoloader;
 
-class Manager {
+class Organizer {
     public static function organize(string $path, array $extensions = [], bool $prepend = true): void {
         self::addPath($path, $prepend);
         self::addExtensions($extensions);
-        self::$COMPOSER_AUTOLOADERS[$path] = self::compose($path);
+        self::$COMPOSER_AUTOLOADERS[$path] = self::getComposerAutoloader($path);
     }
 
     protected static array $COMPOSER_AUTOLOADERS = [];
     
-    public static function compose(string $root = __DIR__): ?ComposerAutoloader {
+    public static function getComposerAutoloader(string $root = __DIR__): ?ComposerAutoloader {
         while (!isset(self::$COMPOSER_AUTOLOADERS[$root]) && dirname($root) !== $root) {
             if (is_file($composer_file = $root . DIRECTORY_SEPARATOR . 'composer.json') && is_readable($composer_file)) {
                 if (($composer_data = @file_get_contents($composer_file)) && ($composer_data = @json_decode($composer_data, true))) {
