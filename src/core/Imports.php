@@ -1,8 +1,6 @@
 <?php namespace Organizer;
 
-class Imports implements \ArrayAccess, \IteratorAggregate, \Countable {
-    use Values;
-
+class Imports extends Values {
     public function __construct(protected Exports $exports) {
         $this->values = $exports->values;
     }
