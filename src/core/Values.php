@@ -7,6 +7,24 @@ class Values {
 
     protected array $items = [];
 
+    public function use(string ...$names): self {
+        $items = [];
+        foreach ($names as $name) {
+            foreach ($this->items as $key => $value) {
+                if (fnmatch($name, $key)) {
+                    $items[$key] = $value;
+                }
+            }
+        }
+        return new self($items);
+    }
+
+    public function as(&...$vars): void {
+        foreach ($vars as &$var) {
+            $var = array_shift($this->items);
+        }
+    }
+
     public function getIterator(): \ArrayIterator {
         return new \ArrayIterator($this->items);
     }
@@ -19,13 +37,9 @@ class Values {
         return $this->items;
     }
 
-    public function __invoke(...$items): self {
-        return new self($items);
-    }
-
     public function setList(array $items): void {
         foreach ($items as $key => $value)
-            $this->set($key, $value);
+            $this->setItem($key, $value);
     }
 
     public function getList(): array {
@@ -67,7 +81,7 @@ class Values {
     }
 
     public function offsetGet($offset): mixed {
-        return $this->getKey($offset);
+        return $this->getValue($offset);
     }
 
     public function offsetSet($offset, $value): void {
@@ -79,7 +93,7 @@ class Values {
     }
 
     public function __get($name): mixed {
-        return $this->keyExists($name);
+        return $this->getValue($name);
     }
 
     public function __set($name, $value): void {
@@ -94,8 +108,14 @@ class Values {
         $this->removeKey($name);
     }
 
-    public function __call($name, $arguments): mixed {
+    public function __invoke(...$args): self {
+        return $this->__call('default', $args);
+    }
+
+    public function __call($name, $params): mixed {
         $value = $this->getValue($name);
-        return is_callable($value) ? $value(...$arguments) : null;
+        if (!is_callable($value))
+            throw new \BadMethodCallException("Method '$name' does not exist");
+        return $value(...$params);
     }
 }
